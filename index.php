@@ -17,13 +17,15 @@
         private $password = "";
         private $db_name = "";
         public $conn = null;
-        public function setConn() {
+        public function setConn()
+        {
             $this->localhost = "localhost";
             $this->username = "root";
             $this->password = "";
             $this->db_name = "feo_database";
         }
-        public function getConn(){
+        public function getConn(): object
+        {
             $this->conn = new mysqli($this->localhost, $this->username, $this->password, $this->db_name);
             if ($this->conn->connect_error){
                 die("Connection failed: " . $this->conn->connect_error);
@@ -37,7 +39,8 @@
     class Date {
         private $sql = "";
         private $result = null;
-        public function getDate($connection){
+        public function getDate($connection): string
+        {
             $this->sql = "SELECT created_at from transactions ORDER BY created_at DESC LIMIT 1";
             $this->result = $connection->query($this->sql);
             $this->row = $this->result->fetch_assoc();
@@ -49,9 +52,10 @@
         private $sql = "";
         private $result = null;
         private $row = null;
+        private $key = "";
         public $users = array();
-        public $key = "";
-        public function fetchData($date, $connection){
+        public function fetchData($date, $connection): array
+        {
             $this->sql = "SELECT user_id, name, address, phone, email, password, SUM(price), currency FROM users JOIN transactions ON users.id=transactions.user_id WHERE transactions.created_at >= '$date' GROUP BY user_id, currency";
             $this->result = $connection->query($this->sql);
             if ($this->result->num_rows > 0){
@@ -75,7 +79,8 @@
         private $fields = [];
         private $csv_fields = [];
         private $id = 1;   
-        public function save_to_csv($users){
+        public function save_to_csv($users)
+        {
             $this->delimiter = ";";
             $this->filename = "users.csv";
             $this->f = fopen($this->filename, "w");
@@ -91,7 +96,7 @@
     $database = new Database();
     $database->setConn();
     $connection = $database->getConn();
-        
+    
     $datum = new Date();        
     $usersinfo = new Users();
     $usersinfo = $usersinfo->fetchData($datum->getDate($connection), $connection);
