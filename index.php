@@ -39,7 +39,7 @@
     class Date {
         private $sql = "";
         private $result = null;
-        public function getDate($connection): string
+        public function getDate(object $connection): string
         {
             $this->sql = "SELECT created_at from transactions ORDER BY created_at DESC LIMIT 1";
             $this->result = $connection->query($this->sql);
@@ -54,7 +54,7 @@
         private $row = null;
         private $key = "";
         public $users = array();
-        public function fetchData($date, $connection): array
+        public function fetchData(string $date, object $connection): array
         {
             $this->sql = "SELECT user_id, name, address, phone, email, password, SUM(price), currency FROM users JOIN transactions ON users.id=transactions.user_id WHERE transactions.created_at >= '$date' GROUP BY user_id, currency";
             $this->result = $connection->query($this->sql);
@@ -79,7 +79,7 @@
         private $fields = [];
         private $csv_fields = [];
         private $id = 1;   
-        public function save_to_csv($users)
+        public function save_to_csv(array $users)
         {
             $this->delimiter = ";";
             $this->filename = "users.csv";
