@@ -17,12 +17,12 @@
         private $password = "";
         private $db_name = "";
         public $conn = null;
-        public function setConn()
+        public function setConn(string $localhost, string $username, string $password, string $db_name)
         {
-            $this->localhost = "localhost";
-            $this->username = "root";
-            $this->password = "";
-            $this->db_name = "feo_database";
+            $this->localhost = $localhost;
+            $this->username = $username;
+            $this->password = $password;
+            $this->db_name = $db_name;
         }
         public function getConn(): object
         {
@@ -31,18 +31,23 @@
                 die("Connection failed: " . $this->conn->connect_error);
             } else {
                 return $this->conn;
-            }     
+            }
+            
         }    
     }
     
     class Date {
         private $sql = "";
+        private $row = null;
         private $result = null;
-        public function getDate(object $connection): string
+        public function setDate(object $connection)
         {
             $this->sql = "SELECT created_at from transactions ORDER BY created_at DESC LIMIT 1";
             $this->result = $connection->query($this->sql);
             $this->row = $this->result->fetch_assoc();
+        }
+        public function getDate(): string
+        {
             return date("Y-m-d", strtotime('-1 month', strtotime($this->row["created_at"])));
         }
     }
@@ -53,10 +58,13 @@
         private $row = null;
         private $key = "";
         public $users = array();
-        public function fetchData(string $date, object $connection): array
+        public function setFetchedData(string $date, object $connection)
         {
             $this->sql = "SELECT user_id, name, address, phone, email, password, SUM(price), currency FROM users JOIN transactions ON users.id=transactions.user_id WHERE transactions.created_at >= '$date' GROUP BY user_id, currency";
             $this->result = $connection->query($this->sql);
+        }
+        public function getFetchedData(): array
+        {
             if ($this->result->num_rows > 0){
                 while ($this->row = $this->result->fetch_assoc()){
                     $key = $this->row["user_id"];
@@ -93,13 +101,17 @@
     }
     
     $database = new Database();
-    $database->setConn();
+    $database->setConn("localhost", "root", "", "feo_database");
     $connection = $database->getConn();
-    
-    $datum = new Date();        
-    $usersinfo = new Users();
-    $usersinfo = $usersinfo->fetchData($datum->getDate($connection), $connection);
 
+    $datum = new Date();
+    $datum->setDate($connection);
+    $datum = $datum->getDate();
+    
+    $usersinfo = new Users();
+    $usersinfo->setFetchedData($datum, $connection);
+    $usersinfo = $usersinfo->getFetchedData();
+    
     $csv_file = new Csv();
     $csv_file->save_to_csv($usersinfo);
     
