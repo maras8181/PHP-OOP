@@ -101,7 +101,7 @@
     }
     
     $database = new Database();
-    $database->setConn("localhost", "root", "", "feo_database");
+    $database->setConn("localhost", "root", "", "name_of_database");
     $connection = $database->getConn();
 
     $datum = new Date();
